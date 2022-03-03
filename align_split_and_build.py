@@ -10,10 +10,10 @@ import pandas as pd
 import subprocess
 import datetime
 import dateutil
-print(sys.path)
+# print(sys.path)
 path_root = pathlib.Path(__file__).parents[0]
 sys.path.append(str(path_root) + '/modules')
-print(sys.path)
+# print(sys.path)
 
 from modules.find_seqs import *
 
@@ -22,8 +22,7 @@ def parse_args():
         description='Automate downloading of high-throughput sequence data and updating of alignments using Extensiphy.')
     parser.add_argument('--align_dir', default=False, help='input directory of alignments option.')
     parser.add_argument('--output_dir', default=False, help='output directory of alignments option.')
-
-
+    parser.add_argument('--specific_taxon', default=False, help='taxon of interest to pull from the alignments in the align_dir.')
     return parser.parse_args()
 
 def main():
@@ -33,32 +32,38 @@ def main():
 
     os.mkdir(args.output_dir)
 
-    # Make directory to hold new alignments
-    for num, file in enumerate(list_of_files):
+    if args.specific_taxon == False:
+        # Make directory to hold new alignments
+        for num, file in enumerate(list_of_files):
 
-        suffix = '_removed.aln'
-        pattern = '>\w+\s'
+            # suffix = '_removed.aln'
+            # pattern = '>\w+\s'
 
-        # get names from the first file
-        if num == 1:
+            # get names from the first file
+            if num == 1:
 
-            read_file_seqs = open(args.align_dir + '/' + file).read()
-            # print(read_file_seqs)
+                read_file_seqs = open(args.align_dir + '/' + file).read()
+                # print(read_file_seqs)
 
-            matches = re.findall(pattern, read_file_seqs)
+                matches = re.findall(pattern, read_file_seqs)
 
-            if matches:
+                if matches:
 
-                for num2, name in enumerate(matches):
+                    for num2, name in enumerate(matches):
 
-                    # LINE ONLY FOR TESTING
-                    # Prevent building an alignment for every taxon
-                    if num2 < 3:
+                        # LINE ONLY FOR TESTING
+                        # Prevent building an alignment for every taxon
+                        if num2 < 3:
 
-                        name = name.strip('\n').strip('>')
-                        print(name)
+                            name = name.strip('\n').strip('>')
+                            print(name)
 
-                        find_specific_seqs(args.align_dir, list_of_files, args.output_dir, name)
+                            find_specific_seqs(args.align_dir, list_of_files, args.output_dir, name)
+
+    else:
+
+        find_specific_seqs(args.align_dir, list_of_files, args.output_dir, args.specific_taxon)
+
 
 
 
