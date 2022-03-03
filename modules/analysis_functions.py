@@ -57,3 +57,6 @@ def build_branch_length_table(taxon_list):
     df = pd.DataFrame(columns=taxon_list, index=taxon_list)
 
     return df
+
+
+def compare_new_and_original_seqs(orig_align, dir_of_new_aligns):

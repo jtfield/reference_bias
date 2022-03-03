@@ -12,8 +12,8 @@ from modules.analysis_functions import *
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(prog='Multi_EP', \
-        description='Split an input alignment into separate sequences. Run EP using the same input data on each sequence.')
+    parser = argparse.ArgumentParser(prog='bias analysis', \
+        description='After running EP on multiple reference sequences, analyze the results.')
     parser.add_argument('--tree_file', default=False, help='input phylogeny option.')
 
     return parser.parse_args()
@@ -25,6 +25,8 @@ def main():
     df = build_branch_length_matrix(args.tree_file)
 
     
+
+
 
 
 
