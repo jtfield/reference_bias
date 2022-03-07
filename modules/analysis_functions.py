@@ -24,7 +24,12 @@ def build_branch_length_matrix(phylogeny):
 
     # Populate taxon list
     for idx1, taxon1 in enumerate(tree.taxon_namespace):
-        taxon_list.append(taxon1)
+        # print(dir(taxon1))
+        # print(type(taxon1.label))
+        # print(type(taxon1))
+        str_taxon1 = str(taxon1.label)
+        # print(type(str_taxon))
+        taxon_list.append(str_taxon1)
 
 
     br_df = build_all_to_all_table(taxon_list)
@@ -36,14 +41,16 @@ def build_branch_length_matrix(phylogeny):
     for idx1, taxon1 in enumerate(tree.taxon_namespace):
         # print(taxon1)
         # print(idx1)
+        str_taxon1 = str(taxon1.label)
         for taxon2 in tree.taxon_namespace:
-            mrca = pdm.mrca(taxon1, taxon2)
+            str_taxon2 = str(taxon2.label)
+            # mrca = pdm.mrca(taxon1, taxon2)
             weighted_patristic_distance = pdm.patristic_distance(taxon1, taxon2)
 
-            br_df.at[taxon1, taxon2] = weighted_patristic_distance
+            br_df.at[str_taxon1, str_taxon2] = weighted_patristic_distance
 
-            # print(taxon1)
-            # print(taxon2)
+            # print(str_taxon1)
+            # print(str_taxon2)
             # # print(mrca)
             # print(weighted_patristic_distance)
             # print("#####")
@@ -58,24 +65,48 @@ def build_all_to_all_table(taxon_list):
 
     return df
 
-def build_basic_comparison_df():
+def build_basic_comparison_df(data, file_name):
     """
-    Builds a table with columns matching: \
-     the new sequence, \
-     the reference, \
-     the number of identical nucleotides, \
-     the number of non identical non-gap characters, \
-     the number of unshared gaps.
+    Builds a table with columns matching:
     """
 
-    columns = ['target_taxon', 'reference', 'patristic_distance', 'identical_nucleotides', 'non_identical_nucleotides', 'non_matching_gaps']
+    columns = ['target_taxon', \
+    'reference', \
+    'patristic_distance_to_ref', \
+    'total_identical_positions', \
+    'true_seq_identical_nucleotides', \
+    'true_seq_identical_gaps', \
+    'true_seq_identical_degens', \
+    'total_ref_seq_identical_positions', \
+    'total_ref_seq_identical_positions', \
+    'total_ref_seq_identical_gaps', \
+    'total_ref_seq_identical_degens', \
+    'nucs_not_matching_true_or_ref']
 
-    df = pd.DataFrame(columns=columns)
+    # # output.append("ident_to_origin_seq")
+    # output.append(total_ident)
+    # output.append(ident_nucs)
+    # output.append(ident_gaps)
+    # output.append(ident_degens)
+    # # output.append(non_ident_bases)
+    #
+    # # output.append("ident_to_ref_seq")
+    # output.append(total_ref_ident)
+    # output.append(ident_to_ref_nucs)
+    # output.append(ident_to_ref_gaps)
+    # output.append(ident_to_ref_degens)
+    #
+    # output.append("not_ident_to_any")
+    # output.append(not_ident_to_any)
+
+    df = pd.DataFrame(data, columns=columns)
+
+    df.to_csv(file_name)
 
     return df
 
 
-def prepare_seq_comparison(orig_align, dir_of_new_aligns, suffix):
+def prepare_seq_comparison(orig_align, dir_of_new_aligns, suffix, br_df):
     """
     Make comparisons between the original alignment/sequences and the alignments/sequences based on each reference"
     """
@@ -97,7 +128,7 @@ def prepare_seq_comparison(orig_align, dir_of_new_aligns, suffix):
         orig_align_contents = open(orig_align, 'r').read()
 
         for align in list_of_aligns:
-            print(align)
+            # print(align)
 
             ref_name = align.replace(suffix, '')
 
@@ -114,17 +145,18 @@ def prepare_seq_comparison(orig_align, dir_of_new_aligns, suffix):
 
                 ref_name_check = split_ref_name_and_seq[0]
                 ref_seq = split_ref_name_and_seq[1]
-                print("ref name check: ", ref_name_check)
+                # print("ref name check: ", ref_name_check)
                 # print("found ref")
                 # print(find_ref_seq)
 
-                loop_over_aligns(prior_to_df_list, orig_align_contents, read_new_align, ref_name, ref_seq)
+                loop_over_aligns(prior_to_df_list, orig_align_contents, read_new_align, ref_name, ref_seq, br_df)
 
                 # print(prior_to_df_list)
 
-    print(prior_to_df_list)
+    # print(prior_to_df_list)
+    return prior_to_df_list
 
-def loop_over_aligns(prior_to_df_list, orig_align, new_align, ref_name, ref_seq):
+def loop_over_aligns(prior_to_df_list, orig_align, new_align, ref_name, ref_seq, br_df):
     """
     Fills dataframe with simple comparison info
     """
@@ -158,11 +190,11 @@ def loop_over_aligns(prior_to_df_list, orig_align, new_align, ref_name, ref_seq)
                     name_2 = split_name_and_seq_orig[0]
                     seq_2 = split_name_and_seq_orig[1]
 
-                    analysis_results = make_comparisons(seq_2, seq_1, ref_seq, prior_to_df_list)
+                    analysis_results = make_comparisons(seq_2, seq_1, ref_seq, br_df, prior_to_df_list, name_1, ref_name)
                     # print(prior_to_df_list)
 
 
-def make_comparisons(orig_seq, new_seq, ref_seq, output):
+def make_comparisons(orig_seq, new_seq, ref_seq, br_df, list_of_lists, new_seq_name, ref_seq_name):
     """
     Function to make comparison between sequences
     """
@@ -172,7 +204,7 @@ def make_comparisons(orig_seq, new_seq, ref_seq, output):
     gaps = ['-']
     degen_nucleotides = ['W', 'S', 'M', 'K', 'R', 'Y', 'B', 'D', 'H', 'V', 'N']
 
-    # output = []
+    output = []
     # non_identical_sites_to_check = []
 
     total_ident = 0
@@ -187,11 +219,20 @@ def make_comparisons(orig_seq, new_seq, ref_seq, output):
     ident_to_ref_degens = 0
 
     not_ident_to_any = 0
-    # print(len(orig_seq))
-    # print(len(new_seq))
-    # assert len(orig_seq) == len(new_seq)
 
-    # print("Comparing sequences.")
+    br_to_ref = ''
+    new_seq_name = new_seq_name.replace('_', ' ')
+    ref_seq_name = ref_seq_name.replace('_', ' ')
+
+    # print(new_seq_name)
+    # print(ref_seq_name)
+    try:
+        br_to_ref = br_df.at[new_seq_name, ref_seq_name]
+        # print(br_to_ref)
+        # print(type(br_to_ref))
+    except KeyError:
+        print("combination not found: ", new_seq_name + ' ' + ref_seq_name)
+
 
     for num, orig_nuc in enumerate(orig_seq):
         if orig_nuc != None and new_seq[num] != None:
@@ -244,24 +285,29 @@ def make_comparisons(orig_seq, new_seq, ref_seq, output):
                     else:
                         not_ident_to_any+=1
 
-    output.append("ident_to_origin_seq")
+    # output.append("ident_to_origin_seq")
+    output.append(new_seq_name)
+    output.append(ref_seq_name)
+    output.append(br_to_ref)
+
     output.append(total_ident)
     output.append(ident_nucs)
     output.append(ident_gaps)
     output.append(ident_degens)
     # output.append(non_ident_bases)
 
-    output.append("ident_to_ref_seq")
+    # output.append("ident_to_ref_seq")
     output.append(total_ref_ident)
     output.append(ident_to_ref_nucs)
     output.append(ident_to_ref_gaps)
     output.append(ident_to_ref_degens)
 
-    output.append("not_ident_to_any")
+    # output.append("not_ident_to_any")
     output.append(not_ident_to_any)
 
+    list_of_lists.append(output)
     # print(output)
-    return output
+    return list_of_lists
 
 
 
