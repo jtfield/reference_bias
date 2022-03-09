@@ -73,15 +73,12 @@ def build_basic_comparison_df(data, file_name):
     columns = ['target_taxon', \
     'reference', \
     'patristic_distance_to_ref', \
-    'total_identical_positions', \
-    'true_seq_identical_nucleotides', \
-    'true_seq_identical_gaps', \
-    'true_seq_identical_degens', \
-    'total_ref_seq_identical_positions', \
-    'total_ref_seq_identical_positions', \
-    'total_ref_seq_identical_gaps', \
-    'total_ref_seq_identical_degens', \
-    'nucs_not_matching_true_or_ref']
+    'total_identical_nucleotides', \
+    'proportion_ident_nucleotides', \
+    'identical_to_original_and_ref_seq', \
+    'proportion_ident_to_orig_and_ref', \
+    'total_gaps_and_degens', \
+    'proportion_gaps_and_degens']
 
     # # output.append("ident_to_origin_seq")
     # output.append(total_ident)
@@ -205,24 +202,33 @@ def make_comparisons(orig_seq, new_seq, ref_seq, br_df, list_of_lists, new_seq_n
     degen_nucleotides = ['W', 'S', 'M', 'K', 'R', 'Y', 'B', 'D', 'H', 'V', 'N']
 
     output = []
-    # non_identical_sites_to_check = []
 
-    total_ident = 0
     ident_nucs = 0
-    ident_gaps = 0
-    ident_degens = 0
-    # non_ident_bases = 0
+    ident_to_ref_seq = 0
+    ident_gaps_and_degens = 0
 
-    total_ref_ident = 0
-    ident_to_ref_nucs = 0
-    ident_to_ref_gaps = 0
-    ident_to_ref_degens = 0
 
-    not_ident_to_any = 0
+    # total_ident = 0
+    # ident_nucs = 0
+    # ident_gaps = 0
+    # ident_degens = 0
+    # ident_gaps_and_degens = 0
+    #
+    #
+    # total_ref_ident = 0
+    # ident_to_ref_nucs = 0
+    # ident_to_ref_gaps = 0
+    # ident_to_ref_degens = 0
+    #
+    # not_ident_to_any = 0
 
     br_to_ref = ''
     new_seq_name = new_seq_name.replace('_', ' ')
     ref_seq_name = ref_seq_name.replace('_', ' ')
+
+    len_orig = len(orig_seq)
+    len_ref = len(ref_seq)
+    len_new = len(new_seq)
 
     # print(new_seq_name)
     # print(ref_seq_name)
@@ -242,115 +248,56 @@ def make_comparisons(orig_seq, new_seq, ref_seq, br_df, list_of_lists, new_seq_n
 
             orig_nuc = orig_nuc.upper()
             new_nuc = new_seq[num].upper()
-            # ref_nuc = ''
-            #
-            # if num <= len(ref_seq):
-            #     ref_nuc = ref_seq[num].upper()
 
-            if orig_nuc == new_nuc and orig_nuc in standard_nucleotides:
-                ident_nucs+=1
-                total_ident+=1
-
-            elif orig_nuc == new_nuc and orig_nuc in degen_nucleotides:
-                ident_degens+=1
-                total_ident+=1
-
-            elif orig_nuc == new_nuc and orig_nuc in gaps:
-                ident_gaps+=1
-                total_ident+=1
+            if new_nuc in gaps or new_nuc in degen_nucleotides:
+                ident_gaps_and_degens+=1
 
 
-            # NOW WE CHECK FOR NON-IDENTICAL NUCs
-            elif orig_nuc != new_nuc:
+            if orig_nuc in standard_nucleotides and new_nuc in standard_nucleotides:
+                if orig_nuc == new_nuc:
+                    ident_nucs+=1
 
-                ref_nuc = ''
+                    ref_nuc = ''
 
-                if num < len(ref_seq):
-                    ref_nuc = ref_seq[num].upper()
+                    if num < len(ref_seq):
+                        ref_nuc = ref_seq[num].upper()
 
-                if len(ref_nuc) > 0:
+                        if len(ref_nuc) > 0 and new_nuc == ref_nuc:
+                            ident_to_ref_seq+=1
 
-                    if new_nuc == ref_nuc and new_nuc in standard_nucleotides:
-                        ident_to_ref_nucs+=1
-                        total_ref_ident+=1
+    calc_proportion_ident = ident_nucs / len_new
+    calc_proportion_ident_to_ref = ident_to_ref_seq / len_new
+    calc_proportion_degens = ident_gaps_and_degens / len_new
 
-                    elif new_nuc == ref_nuc and new_nuc in degen_nucleotides:
-                        ident_to_ref_degens+=1
-                        total_ref_ident+=1
-
-                    elif new_nuc == ref_nuc and new_nuc in gaps:
-                        ident_to_ref_gaps+=1
-                        total_ref_ident+=1
-
-                    else:
-                        not_ident_to_any+=1
-
-    # output.append("ident_to_origin_seq")
     output.append(new_seq_name)
     output.append(ref_seq_name)
     output.append(br_to_ref)
 
-    output.append(total_ident)
     output.append(ident_nucs)
-    output.append(ident_gaps)
-    output.append(ident_degens)
-    # output.append(non_ident_bases)
+    output.append(calc_proportion_ident)
+    output.append(ident_to_ref_seq)
+    output.append(calc_proportion_ident_to_ref)
+    output.append(ident_gaps_and_degens)
+    output.append(calc_proportion_degens)
 
-    # output.append("ident_to_ref_seq")
-    output.append(total_ref_ident)
-    output.append(ident_to_ref_nucs)
-    output.append(ident_to_ref_gaps)
-    output.append(ident_to_ref_degens)
-
-    # output.append("not_ident_to_any")
-    output.append(not_ident_to_any)
+    # output.append(new_seq_name)
+    # output.append(ref_seq_name)
+    # output.append(br_to_ref)
+    #
+    # output.append(total_ident)
+    # output.append(ident_nucs)
+    # output.append(ident_gaps)
+    # output.append(ident_degens)
+    #
+    # output.append(total_ref_ident)
+    # output.append(ident_to_ref_nucs)
+    # output.append(ident_to_ref_gaps)
+    # output.append(ident_to_ref_degens)
+    #
+    # output.append(not_ident_to_any)
 
     list_of_lists.append(output)
-    # print(output)
+
+    print(output)
+
     return list_of_lists
-
-
-
-
-
-    # list_seq_1 = list(orig_seq)
-    # list_seq_2 = list(new_seq)
-    #
-    # zipped_seqs = list(zip(list_seq_1, list_seq_2))
-    #
-    # results = map(check_nucs, zipped_seqs)
-    #
-    # for i in list(results):
-    #     if i == 1:
-    #         ident_nucs+=1
-    #     elif i == 2:
-    #         ident_gaps+=1
-    #     elif i == 3:
-    #         ident_degens+=1
-    #     elif i == 4:
-    #         non_ident_bases+=1
-
-
-
-
-
-    return output
-
-
-def check_nucs(nuc_tuple):
-    standard_nucleotides = ['A', 'C', 'G', 'T']
-    gaps = ['-']
-    degen_nucleotides = ['W', 'S', 'M', 'K', 'R', 'Y', 'B', 'D', 'H', 'V', 'N']
-    nuc_1 = nuc_tuple[0].upper()
-    nuc_2 = nuc_tuple[1].upper()
-    output = []
-
-    if nuc_1 == nuc_2:
-        if nuc_1 in standard_nucleotides:
-            return 1
-        elif nuc_1 in gaps:
-            return 2
-        elif nuc_1 in degen_nucleotides:
-            return 3
-    else:
-        return 4

@@ -17,6 +17,7 @@ def parse_args():
     parser.add_argument('--cores_per_run', default=2)
     parser.add_argument('--tail_1', default="_1.fastq")
     parser.add_argument('--tail_2', default="_2.fastq")
+    parser.add_argument('--intermediate_files', default='CLEAN', help='Options are CLEAN or KEEP')
 
     return parser.parse_args()
 
@@ -49,7 +50,7 @@ def main():
         path_to_ref_removed_align = current_abs_path + "/" + taxon_dir + "_removed.aln"
 
         # Run EP using each sequence as an input
-        subprocess.run([args.ep_path + "/extensiphy.sh", "-a", sequence, "-d", args.reads_dir, "-i", "CLEAN", "-p", str(args.ep_runs) ,"-c", str(args.cores_per_run), "-1", args.tail_1, "-2", args.tail_2, "-o", current_abs_path + "/ep_output"])
+        subprocess.run([args.ep_path + "/extensiphy.sh", "-a", sequence, "-d", args.reads_dir, "-i", args.intermediate_files, "-p", str(args.ep_runs) ,"-c", str(args.cores_per_run), "-1", args.tail_1, "-2", args.tail_2, "-o", current_abs_path + "/ep_output"])
 
         # Read alignment and make a copy of the alignment with the reference sequence removed
         print("Building the extended EP alignment without the reference sequence.")

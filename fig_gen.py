@@ -32,35 +32,16 @@ def main():
 
 
 def scatter_plot(table):
-    # table.plot(kind='scatter', x='patristic_distance_to_ref', y='total_ref_seq_identical_positions', color='red')
-    # plt.show()
-
-    # table.plot(kind='scatter', x='patristic_distance_to_ref', y='total_identical_positions', color='red')
-    # plt.show()
-
-    # table.plot(kind='scatter', x='patristic_distance_to_ref', y='ref_seq_identical_positions', color='red')
-    # plt.show()
-
-    # table.plot(kind='scatter', x='patristic_distance_to_ref', y='total_ref_seq_identical_degens', color='red')
-    # plt.show()
-
-    # table.plot(kind='scatter', x='patristic_distance_to_ref', y='total_ref_seq_identical_gaps', color='red')
-    # plt.show()
-
-    # table.plot(kind='scatter', x='patristic_distance_to_ref', y='true_seq_identical_degens', color='red')
-    # plt.show()
-
-    table.plot(kind='scatter', x='patristic_distance_to_ref', y='true_seq_identical_gaps', color='red')
+    table.plot(kind='scatter', x='patristic_distance_to_ref', y='proportion_ident_nucleotides', color='red')
     plt.show()
 
-    # table.plot(kind='scatter', x='patristic_distance_to_ref', y='true_seq_identical_nucleotides', color='red')
-    # plt.show()
+    table.plot(kind='scatter', x='patristic_distance_to_ref', y='proportion_ident_to_orig_and_ref', color='red')
+    plt.show()
+    #
+    table.plot(kind='scatter', x='patristic_distance_to_ref', y='proportion_gaps_and_degens', color='red')
+    plt.show()
 
-    # table.plot(kind='scatter', x='total_identical_positions', y='total_ref_seq_identical_positions', color='red')
-    # plt.show()
 
-    # table.plot(kind='scatter', x='patristic_distance_to_ref', y='nucs_not_matching_true_or_ref', color='red')
-    # plt.show()
 
 if __name__ == '__main__':
     main()
