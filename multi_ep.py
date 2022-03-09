@@ -25,7 +25,7 @@ def main():
     args = parse_args()
 
     # Make output dir
-    os.mkdir(args.out_dir)
+    # os.mkdir(args.out_dir)
 
     # Move into output dir
     os.chdir(args.out_dir)
