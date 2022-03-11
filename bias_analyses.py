@@ -41,7 +41,7 @@ def main():
     # Make sequence comparisons
     final_data_list = prepare_seq_comparison(args.align_file, args.align_dir, args.suffix, df)
 
-
+    # print(final_data_list)
     filled_final_df = build_basic_comparison_df(final_data_list, args.output_csv)
 
 

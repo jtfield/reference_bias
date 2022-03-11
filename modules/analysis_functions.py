@@ -73,12 +73,14 @@ def build_basic_comparison_df(data, file_name):
     columns = ['target_taxon', \
     'reference', \
     'patristic_distance_to_ref', \
-    'total_identical_nucleotides', \
-    'proportion_ident_nucleotides', \
-    'identical_to_original_and_ref_seq', \
-    'proportion_ident_to_orig_and_ref', \
-    'total_gaps_and_degens', \
-    'proportion_gaps_and_degens']
+    'matches_both', \
+    'matches_orig_only', \
+    'matches_ref_only', \
+    'matches_neither_ref_nor_orig', \
+    'matches_both_nucs_only', \
+    'matches_orig_nucs_only', \
+    'matches_ref_nucs_only', \
+    'matches_neither_nucs_only']
 
     # # output.append("ident_to_origin_seq")
     # output.append(total_ident)
@@ -129,7 +131,7 @@ def prepare_seq_comparison(orig_align, dir_of_new_aligns, suffix, br_df):
 
             ref_name = align.replace(suffix, '')
 
-            ref_name_regex = ref_name + '\s[\w | -]+'
+            ref_name_regex = '('+ ref_name + '\s.+)\s'
 
             ref_regex_compile = re.compile(ref_name_regex)
 
@@ -142,162 +144,163 @@ def prepare_seq_comparison(orig_align, dir_of_new_aligns, suffix, br_df):
 
                 ref_name_check = split_ref_name_and_seq[0]
                 ref_seq = split_ref_name_and_seq[1]
-                # print("ref name check: ", ref_name_check)
-                # print("found ref")
-                # print(find_ref_seq)
 
-                loop_over_aligns(prior_to_df_list, orig_align_contents, read_new_align, ref_name, ref_seq, br_df)
+                split_new_align = read_new_align.split('>')
 
-                # print(prior_to_df_list)
+                for chunk in split_new_align:
+                    if len(chunk) > 0:
 
-    # print(prior_to_df_list)
+                        # this_seqs_list_of_values = []
+
+                        split_new_name_and_seq = chunk.split('\n', 1)
+
+                        new_name = split_new_name_and_seq[0]
+                        new_seq = split_new_name_and_seq[1]
+
+                        orig_name_and_seq_regex = '('+ new_name + '\s.+)\s'
+                        print(orig_name_and_seq_regex)
+
+                        orig_name_and_seq_compile = re.compile(orig_name_and_seq_regex)
+
+                        find_orig_seq = re.findall(orig_name_and_seq_compile, orig_align_contents)
+                        if find_orig_seq:
+
+                            split_orig_name_and_seq = find_orig_seq[0].split('\n', 1)
+
+                            orig_name_check = split_orig_name_and_seq[0]
+                            orig_seq = split_orig_name_and_seq[1]
+
+                            assert new_name == orig_name_check
+
+                            new_name = new_name.replace('_', ' ')
+                            ref_name_check = ref_name_check.replace('_', ' ')
+                            try:
+                                br_to_ref = br_df.at[new_name, ref_name_check]
+                                # this_seqs_list_of_values.append(new_name)
+                                # this_seqs_list_of_values.append(ref_name_check)
+                                # this_seqs_list_of_values.append(br_to_ref)
+
+                                current_seq_check = make_comparison(new_seq, orig_seq, ref_seq)
+
+                                # prior_to_df_list.append(current_seq_check)
+
+                                restructure_counts(prior_to_df_list, current_seq_check, new_name, ref_name_check, br_to_ref)
+
+
+                            except KeyError:
+                                print("combination not found: ", new_name + ' ' + ref_name_check)
+
     return prior_to_df_list
 
-def loop_over_aligns(prior_to_df_list, orig_align, new_align, ref_name, ref_seq, br_df):
+
+                            # assert br_to_ref != ''
+                            # this_seqs_list_of_values.append(new_name)
+                            # this_seqs_list_of_values.append(ref_name_check)
+                            # this_seqs_list_of_values.append(br_to_ref)
+                            #
+                            # current_seq_check = make_comparison(new_seq, orig_seq, ref_seq, this_seqs_list_of_values)
+
+
+def make_comparison(new_seq, orig_seq, ref_seq):
     """
-    Fills dataframe with simple comparison info
+    Make comparison between the sequences and return counts of the results
     """
 
-    # print(ref_name)
-
-    # split original align into chunks
-
-    # prior_to_df_list = []
-
-    split_orig_align = orig_align.split('>')
-
-    # Split new alignment
-    split_new_align = new_align.split('>')
-
-    # Loop over the sequences in new align and find the correct seq in the original align
-    for chunk_1 in split_new_align:
-        if len(chunk_1) > 0:
-
-            split_name_and_seq_new = chunk_1.split('\n', 1)
-            name_1 = split_name_and_seq_new[0]
-            seq_1 = split_name_and_seq_new[1]
-
-
-            for chunk_2 in split_orig_align:
-                if name_1 in chunk_2:
-                    # print("found name: ", name_1)
-
-                    split_name_and_seq_orig = chunk_2.split('\n', 1)
-
-                    name_2 = split_name_and_seq_orig[0]
-                    seq_2 = split_name_and_seq_orig[1]
-
-                    analysis_results = make_comparisons(seq_2, seq_1, ref_seq, br_df, prior_to_df_list, name_1, ref_name)
-                    # print(prior_to_df_list)
-
-
-def make_comparisons(orig_seq, new_seq, ref_seq, br_df, list_of_lists, new_seq_name, ref_seq_name):
-    """
-    Function to make comparison between sequences
-    """
-    # print("waffle")
+    output = []
 
     standard_nucleotides = ['A', 'C', 'G', 'T']
     gaps = ['-']
     degen_nucleotides = ['W', 'S', 'M', 'K', 'R', 'Y', 'B', 'D', 'H', 'V', 'N']
 
-    output = []
+    # matches_orig = 0
+    # matches_ref = 0
+    matches_both = 0
+    matches_neither_ref_nor_orig = 0
+    matches_only_orig = 0
+    matches_only_ref = 0
+    matches_both_nucs_only = 0
+    matches_orig_nucs_only = 0
+    matches_ref_nucs_only = 0
+    matches_neither_nucs_only = 0
 
-    ident_nucs = 0
-    ident_to_ref_seq = 0
-    ident_gaps_and_degens = 0
+    new_seq = new_seq.strip('\n')
+    orig_seq = orig_seq.strip('\n')
+    ref_seq = ref_seq.strip('\n')
 
-
-    # total_ident = 0
-    # ident_nucs = 0
-    # ident_gaps = 0
-    # ident_degens = 0
-    # ident_gaps_and_degens = 0
+    # print(len(new_seq))
+    # print(len(orig_seq))
+    # print(len(ref_seq))
     #
-    #
-    # total_ref_ident = 0
-    # ident_to_ref_nucs = 0
-    # ident_to_ref_gaps = 0
-    # ident_to_ref_degens = 0
-    #
-    # not_ident_to_any = 0
+    # print(new_seq[:20], new_seq[-20:])
+    # print(orig_seq[:20], orig_seq[-20:])
+    # print(ref_seq[:20], ref_seq[-20:])
 
-    br_to_ref = ''
-    new_seq_name = new_seq_name.replace('_', ' ')
-    ref_seq_name = ref_seq_name.replace('_', ' ')
+    for num, nuc in enumerate(new_seq):
 
-    len_orig = len(orig_seq)
-    len_ref = len(ref_seq)
-    len_new = len(new_seq)
+        nuc = nuc.upper()
+        orig_nuc = orig_seq[num].upper()
+        ref_nuc = ref_seq[num].upper()
 
-    # print(new_seq_name)
-    # print(ref_seq_name)
-    try:
-        br_to_ref = br_df.at[new_seq_name, ref_seq_name]
-        # print(br_to_ref)
-        # print(type(br_to_ref))
-    except KeyError:
-        print("combination not found: ", new_seq_name + ' ' + ref_seq_name)
+        # print(nuc, orig_nuc, ref_nuc)
+
+        if nuc == orig_nuc and nuc == ref_nuc:
+            matches_both+=1
+            # matches_orig+=1
+            # matches_ref+=1
+
+            if nuc in standard_nucleotides:
+                matches_both_nucs_only+=1
+
+        elif nuc == orig_nuc and nuc != ref_nuc:
+            matches_only_orig+=1
+
+            if nuc in standard_nucleotides:
+                matches_orig_nucs_only+=1
+
+        elif nuc == ref_nuc and nuc != orig_nuc:
+            matches_only_ref+=1
+
+            if nuc in standard_nucleotides:
+                matches_ref_nucs_only+=1
+
+        elif nuc != orig_nuc and nuc != ref_nuc:
+            matches_neither_ref_nor_orig+=1
+
+            if nuc in standard_nucleotides:
+                matches_neither_nucs_only+=1
+
+        else:
+            print(nuc)
+            print("found something unexpected")
+
+    output.append(matches_both)
+    output.append(matches_only_orig)
+    output.append(matches_only_ref)
+    output.append(matches_neither_ref_nor_orig)
+    output.append(matches_both_nucs_only)
+    output.append(matches_orig_nucs_only)
+    output.append(matches_ref_nucs_only)
+    output.append(matches_neither_nucs_only)
+
+    # print(output)
+
+    return output
 
 
-    for num, orig_nuc in enumerate(orig_seq):
-        if orig_nuc != None and new_seq[num] != None:
-            # print(nuc)
-            # print(new_seq[num])
-            # print("*****")
+def restructure_counts(primary_list, individual_counts, taxon_name, ref_name, br):
+    """
+    Restructure the individual sequence counts to include taxon and ref name and branch lengths
+    """
 
-            orig_nuc = orig_nuc.upper()
-            new_nuc = new_seq[num].upper()
+    current_list = []
 
-            if new_nuc in gaps or new_nuc in degen_nucleotides:
-                ident_gaps_and_degens+=1
+    current_list.append(taxon_name)
+    current_list.append(ref_name)
+    current_list.append(br)
 
+    for item in individual_counts:
+        current_list.append(item)
 
-            if orig_nuc in standard_nucleotides and new_nuc in standard_nucleotides:
-                if orig_nuc == new_nuc:
-                    ident_nucs+=1
+    print(current_list)
 
-                    ref_nuc = ''
-
-                    if num < len(ref_seq):
-                        ref_nuc = ref_seq[num].upper()
-
-                        if len(ref_nuc) > 0 and new_nuc == ref_nuc:
-                            ident_to_ref_seq+=1
-
-    calc_proportion_ident = ident_nucs / len_new
-    calc_proportion_ident_to_ref = ident_to_ref_seq / len_new
-    calc_proportion_degens = ident_gaps_and_degens / len_new
-
-    output.append(new_seq_name)
-    output.append(ref_seq_name)
-    output.append(br_to_ref)
-
-    output.append(ident_nucs)
-    output.append(calc_proportion_ident)
-    output.append(ident_to_ref_seq)
-    output.append(calc_proportion_ident_to_ref)
-    output.append(ident_gaps_and_degens)
-    output.append(calc_proportion_degens)
-
-    # output.append(new_seq_name)
-    # output.append(ref_seq_name)
-    # output.append(br_to_ref)
-    #
-    # output.append(total_ident)
-    # output.append(ident_nucs)
-    # output.append(ident_gaps)
-    # output.append(ident_degens)
-    #
-    # output.append(total_ref_ident)
-    # output.append(ident_to_ref_nucs)
-    # output.append(ident_to_ref_gaps)
-    # output.append(ident_to_ref_degens)
-    #
-    # output.append(not_ident_to_any)
-
-    list_of_lists.append(output)
-
-    print(output)
-
-    return list_of_lists
+    primary_list.append(current_list)
