@@ -34,16 +34,27 @@ def main():
 def scatter_plot(table):
     # table.plot(kind='scatter', x='patristic_distance_to_ref', y='matches_neither_ref_nor_orig', color='red')
     # plt.show()
-
+    #
     # table.plot(kind='scatter', x='patristic_distance_to_ref', y='matches_orig_nucs_only', color='red')
     # plt.show()
-
-    table.plot(kind='scatter', x='patristic_distance_to_ref', y='matches_orig_only', color='red')
-    plt.show()
     #
+    # table.plot(kind='scatter', x='patristic_distance_to_ref', y='matches_orig_only', color='red')
+    # plt.show()
+    # #
     # table.plot(kind='scatter', x='patristic_distance_to_ref', y='matches_neither_nucs_only', color='red')
     # plt.show()
 
+    # table.plot(kind='scatter', x='patristic_distance_to_ref', y='matches_ref_nucs_only', color='red')
+    # plt.show()
+    #
+    # table.plot(kind='scatter', x='patristic_distance_to_ref', y='matches_ref_only', color='red')
+    # plt.show()
+
+    # table.plot(kind='scatter', x='patristic_distance_to_ref', y='matches_both', color='red')
+    # plt.show()
+    #
+    # table.plot(kind='scatter', x='patristic_distance_to_ref', y='matches_both_nucs_only', color='red')
+    # plt.show()
 
 
 if __name__ == '__main__':
