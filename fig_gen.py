@@ -56,6 +56,15 @@ def scatter_plot(table):
     # table.plot(kind='scatter', x='patristic_distance_to_ref', y='matches_both_nucs_only', color='red')
     # plt.show()
 
+    # table.plot(kind='scatter', x='patristic_distance_to_ref', y='dont_match_ref', color='red')
+    # plt.show()
+
+    table.plot(kind='scatter', x='patristic_distance_to_ref', y='ref_orig_identical_dont_match_either', color='red')
+    plt.show()
+
+    table.plot(kind='scatter', x='patristic_distance_to_ref', y='ref_orig_nonidentical_dont_match_either', color='red')
+    plt.show()
+
 
 if __name__ == '__main__':
     main()

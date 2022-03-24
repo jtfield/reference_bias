@@ -73,30 +73,16 @@ def build_basic_comparison_df(data, file_name):
     columns = ['target_taxon', \
     'reference', \
     'patristic_distance_to_ref', \
-    'matches_both', \
-    'matches_orig_only', \
-    'matches_ref_only', \
-    'matches_neither_ref_nor_orig', \
-    'matches_both_nucs_only', \
-    'matches_orig_nucs_only', \
-    'matches_ref_nucs_only', \
-    'matches_neither_nucs_only']
+    'identical_to_ref', \
+    'identical_to_orig', \
+    'identical_to_both', \
+    'ref_orig_identical_dont_match_either', \
+    'ref_orig_nonidentical_dont_match_either', \
+    'gaps_or_degens']
 
-    # # output.append("ident_to_origin_seq")
-    # output.append(total_ident)
-    # output.append(ident_nucs)
-    # output.append(ident_gaps)
-    # output.append(ident_degens)
-    # # output.append(non_ident_bases)
-    #
-    # # output.append("ident_to_ref_seq")
-    # output.append(total_ref_ident)
-    # output.append(ident_to_ref_nucs)
-    # output.append(ident_to_ref_gaps)
-    # output.append(ident_to_ref_degens)
-    #
-    # output.append("not_ident_to_any")
-    # output.append(not_ident_to_any)
+    # ref_orig_identical_dont_match_either = 0
+    # ref_orig_nonidentical_dont_match_either = 0
+    # gaps_or_degens = 0
 
     df = pd.DataFrame(data, columns=columns)
 
@@ -212,28 +198,29 @@ def make_comparison(new_seq, orig_seq, ref_seq):
     gaps = ['-']
     degen_nucleotides = ['W', 'S', 'M', 'K', 'R', 'Y', 'B', 'D', 'H', 'V', 'N']
 
-    # matches_orig = 0
-    # matches_ref = 0
-    matches_both = 0
-    matches_neither_ref_nor_orig = 0
-    matches_only_orig = 0
-    matches_only_ref = 0
-    matches_both_nucs_only = 0
-    matches_orig_nucs_only = 0
-    matches_ref_nucs_only = 0
-    matches_neither_nucs_only = 0
-
     new_seq = new_seq.strip('\n')
     orig_seq = orig_seq.strip('\n')
     ref_seq = ref_seq.strip('\n')
 
-    # print(len(new_seq))
-    # print(len(orig_seq))
-    # print(len(ref_seq))
-    #
-    # print(new_seq[:20], new_seq[-20:])
-    # print(orig_seq[:20], orig_seq[-20:])
-    # print(ref_seq[:20], ref_seq[-20:])
+# Previous count metrics
+############################################
+    # matches_both = 0
+    # matches_neither_ref_nor_orig = 0
+    # matches_only_orig = 0
+    # matches_only_ref = 0
+    # matches_both_nucs_only = 0
+    # matches_orig_nucs_only = 0
+    # matches_ref_nucs_only = 0
+    # matches_neither_nucs_only = 0
+############################################
+
+    identical_to_ref = 0
+    identical_to_orig = 0
+    identical_to_both = 0
+    ref_orig_identical_dont_match_either = 0
+    ref_orig_nonidentical_dont_match_either = 0
+    gaps_or_degens = 0
+
 
     for num, nuc in enumerate(new_seq):
 
@@ -243,44 +230,73 @@ def make_comparison(new_seq, orig_seq, ref_seq):
 
         # print(nuc, orig_nuc, ref_nuc)
 
-        if nuc == orig_nuc and nuc == ref_nuc:
-            matches_both+=1
-            # matches_orig+=1
-            # matches_ref+=1
+        if nuc in gaps or nuc in degen_nucleotides:
+            gaps_or_degens+=1
 
-            if nuc in standard_nucleotides:
-                matches_both_nucs_only+=1
+        elif orig_nuc == ref_nuc and nuc != orig_nuc:
+            ref_orig_identical_dont_match_either+=1
 
-        elif nuc == orig_nuc and nuc != ref_nuc:
-            matches_only_orig+=1
+        elif orig_nuc != ref_nuc and nuc != ref_nuc and nuc != orig_nuc and nuc != ref_nuc:
+            ref_orig_nonidentical_dont_match_either+=1
 
-            if nuc in standard_nucleotides:
-                matches_orig_nucs_only+=1
+        elif nuc == orig_nuc:
+            identical_to_orig+=1
 
-        elif nuc == ref_nuc and nuc != orig_nuc:
-            matches_only_ref+=1
+            if ref_nuc == orig_nuc:
+                identical_to_both+=1
 
-            if nuc in standard_nucleotides:
-                matches_ref_nucs_only+=1
+        elif nuc == ref_nuc:
+            identical_to_ref+=1
 
-        elif nuc != orig_nuc and nuc != ref_nuc:
-            matches_neither_ref_nor_orig+=1
 
-            if nuc in standard_nucleotides:
-                matches_neither_nucs_only+=1
 
-        else:
-            print(nuc)
-            print("found something unexpected")
 
-    output.append(matches_both)
-    output.append(matches_only_orig)
-    output.append(matches_only_ref)
-    output.append(matches_neither_ref_nor_orig)
-    output.append(matches_both_nucs_only)
-    output.append(matches_orig_nucs_only)
-    output.append(matches_ref_nucs_only)
-    output.append(matches_neither_nucs_only)
+
+        # if nuc == orig_nuc and nuc == ref_nuc:
+        #     matches_both+=1
+        #     # matches_orig+=1
+        #     # matches_ref+=1
+        #
+        #     if nuc in standard_nucleotides:
+        #         matches_both_nucs_only+=1
+        #
+        # elif nuc == orig_nuc and nuc != ref_nuc:
+        #     matches_only_orig+=1
+        #
+        #     if nuc in standard_nucleotides:
+        #         matches_orig_nucs_only+=1
+        #
+        # elif nuc == ref_nuc and nuc != orig_nuc:
+        #     matches_only_ref+=1
+        #
+        #     if nuc in standard_nucleotides:
+        #         matches_ref_nucs_only+=1
+        #
+        # elif nuc != orig_nuc and nuc != ref_nuc:
+        #     matches_neither_ref_nor_orig+=1
+        #
+        #     if nuc in standard_nucleotides:
+        #         matches_neither_nucs_only+=1
+        #
+        # else:
+        #     print(nuc)
+        #     print("found something unexpected")
+
+    # output.append(matches_both)
+    # output.append(matches_only_orig)
+    # output.append(matches_only_ref)
+    # output.append(matches_neither_ref_nor_orig)
+    # output.append(matches_both_nucs_only)
+    # output.append(matches_orig_nucs_only)
+    # output.append(matches_ref_nucs_only)
+    # output.append(matches_neither_nucs_only)
+    output.append(identical_to_ref)
+    output.append(identical_to_orig)
+    output.append(identical_to_both)
+    output.append(ref_orig_identical_dont_match_either)
+    output.append(ref_orig_nonidentical_dont_match_either)
+    output.append(gaps_or_degens)
+
 
     # print(output)
 
