@@ -37,21 +37,22 @@ def main():
         ep_run_outputs = os.listdir(ep_dir_contents)
 
         for taxon_dir in ep_run_outputs:
-            taxon = taxon_dir.replace('output_dir','')
-            print(taxon)
-            path_to_taxon_dir = ep_dir_contents + '/' + taxon_dir
-            taxon_dir_contents = os.listdir(path_to_taxon_dir)
-            # print(taxon_dir)
-            # print(taxon_dir_contents)
+            if taxon_dir.endswith('output_dir'):
+                taxon = taxon_dir.replace('output_dir','')
+                print(taxon)
+                path_to_taxon_dir = ep_dir_contents + '/' + taxon_dir
+                taxon_dir_contents = os.listdir(path_to_taxon_dir)
+                print(taxon_dir)
+                print(taxon_dir_contents)
 
-            path_to_vcf = path_to_taxon_dir + '/dupes_removed_best_cns.vcf'
-            print(path_to_vcf)
+                path_to_vcf = path_to_taxon_dir + '/dupes_removed_best_cns.vcf'
+                print(path_to_vcf)
 
-            new_ref_and_taxon_vcf_name = 'ref_' + ref_taxon + '_query_' + taxon + '.vcf'
-            path_to_new_vcf = args.output_dir + '/' + new_ref_and_taxon_vcf_name
-            print(path_to_new_vcf)
+                new_ref_and_taxon_vcf_name = 'ref_' + ref_taxon + '_query_' + taxon + '.vcf'
+                path_to_new_vcf = args.output_dir + '/' + new_ref_and_taxon_vcf_name
+                print(path_to_new_vcf)
 
-            shutil.copyfile(path_to_vcf, path_to_new_vcf)
+                shutil.copyfile(path_to_vcf, path_to_new_vcf)
 
 
 
