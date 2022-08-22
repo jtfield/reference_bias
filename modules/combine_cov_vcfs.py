@@ -10,6 +10,7 @@ import re
 import pathlib
 import subprocess
 import shutil
+from os.path import exists
 
 def parse_args():
     parser = argparse.ArgumentParser(prog='multi_diff_counter.py', \
@@ -46,13 +47,15 @@ def main():
                 print(taxon_dir_contents)
 
                 path_to_vcf = path_to_taxon_dir + '/dupes_removed_best_cns.vcf'
-                print(path_to_vcf)
+                exists_check = exists(path_to_vcf)
 
-                new_ref_and_taxon_vcf_name = 'ref_' + ref_taxon + '_query_' + taxon + '.vcf'
-                path_to_new_vcf = args.output_dir + '/' + new_ref_and_taxon_vcf_name
-                print(path_to_new_vcf)
+                if exists_check:
 
-                shutil.copyfile(path_to_vcf, path_to_new_vcf)
+                    new_ref_and_taxon_vcf_name = 'ref_' + ref_taxon + '_query_' + taxon + '.vcf'
+                    path_to_new_vcf = args.output_dir + '/' + new_ref_and_taxon_vcf_name
+                    print(path_to_new_vcf)
+
+                    shutil.copyfile(path_to_vcf, path_to_new_vcf)
 
 
 
