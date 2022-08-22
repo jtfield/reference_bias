@@ -31,7 +31,7 @@ def main():
         ref_taxon = align_dir
         path_to_align_dir = args.multi_ep_dir + '/' + align_dir
         ep_dir_container = os.listdir(path_to_align_dir)
-        print(ep_dir_container)
+        #print(ep_dir_container)
 
         ep_dir_contents = path_to_align_dir + '/ep_output'
 
@@ -40,11 +40,11 @@ def main():
         for taxon_dir in ep_run_outputs:
             if taxon_dir.endswith('output_dir'):
                 taxon = taxon_dir.replace('output_dir','')
-                print(taxon)
+                #print(taxon)
                 path_to_taxon_dir = ep_dir_contents + '/' + taxon_dir
                 taxon_dir_contents = os.listdir(path_to_taxon_dir)
-                print(taxon_dir)
-                print(taxon_dir_contents)
+                #print(taxon_dir)
+                #print(taxon_dir_contents)
 
                 path_to_vcf = path_to_taxon_dir + '/dupes_removed_best_cns.vcf'
                 exists_check = exists(path_to_vcf)
@@ -53,12 +53,12 @@ def main():
 
                     new_ref_and_taxon_vcf_name = 'ref_' + ref_taxon + '_query_' + taxon + '.vcf'
                     path_to_new_vcf = args.output_dir + '/' + new_ref_and_taxon_vcf_name
-                    print(path_to_new_vcf)
+                    #print(path_to_new_vcf)
 
                     shutil.copyfile(path_to_vcf, path_to_new_vcf)
 
                 else:
-                    print("MISSING TAXON VCF FILE: ", taxon_dir)
+                    print("MISSING TAXON VCF FILE: {t}, ref {r}".format(t=taxon_dir, r=align_dir))
 
 
 
