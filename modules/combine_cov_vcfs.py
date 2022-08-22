@@ -57,6 +57,9 @@ def main():
 
                     shutil.copyfile(path_to_vcf, path_to_new_vcf)
 
+                else:
+                    print("MISSING TAXON VCF FILE: ", taxon_dir)
+
 
 
 
