@@ -35,20 +35,20 @@ def main():
         split_file = file_name.split('query_')
         front_of_file = split_file[0]
         query_sra = split_file[1].replace('.vcf','')
-        print(query_sra)
+        # print(query_sra)
 
         sra_loc = sample_df.loc[sample_df['Run'] == query_sra]
         found_sample_name = sra_loc['SampleName'].values[0]
-        print(found_sample_name)
+        # print(found_sample_name)
 
         new_file_name = front_of_file + 'query_' + found_sample_name + '.vcf'
-        print(new_file_name)
+        # print(new_file_name)
 
         old_file_path = args.vcf_dir + '/' + file_name
         new_file_path = args.vcf_dir + '/' + new_file_name
 
-        print(old_file_path)
-        print(new_file_path)
+        # print(old_file_path)
+        # print(new_file_path)
 
         os.rename(old_file_path, new_file_path)
 
