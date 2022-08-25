@@ -11,6 +11,7 @@ import pathlib
 import subprocess
 import shutil
 import pandas as pd
+from itertools import islice
 
 def parse_args():
     parser = argparse.ArgumentParser(prog='coverage_analysis.py', \
@@ -18,6 +19,7 @@ def parse_args():
     parser.add_argument('--vcf_dir', help='Directory of multiple coverage vcf files.')
     parser.add_argument('--diffs_dir', help='directory of differences files.')
     parser.add_argument('--gap_files_dir', help='directory of files tracking gap positions in each ref files.')
+    parser.add_argument('--output_csv', default='unambigous_errors_coverage.csv', help='table of coverage of each unambiguous error analyzed.')
     # parser.add_argument('--output_coverage_dir', default='coverage_analysis_results', help='directory of updated unambiguous differences files that now include coverage data for each ref_base.')
     return parser.parse_args()
 
@@ -40,13 +42,16 @@ def main():
             print(unfound_unambig_diffs_file)
             ref_gaps = pd.read_csv(args.gap_files_dir + '/' + ref + '_gap_tracker.csv')
             read_diffs = pd.read_csv(args.diffs_dir + '/' + unfound_unambig_diffs_file)
-            read_vcf = pd.read_table(args.vcf_dir + '/' + file_name, sep='\s+', skiprows=21, escapechar='#')
+            # read_vcf = pd.read_table(args.vcf_dir + '/' + file_name, sep='\s+', skiprows=21, escapechar='#')
+            read_vcf = smart_read_vcf(args.vcf_dir + '/' + file_name)
 
             print(ref_gaps.columns)
             print(read_diffs.columns)
             print(read_vcf.columns)
 
-            # coverage_check(read_vcf, read_diffs)
+            get_real_position(read_vcf, ref_gaps, read_diffs)
+
+            # exit()
 
         elif unfound_unambig_diffs_file not in diffs_list:
             missing_diff_files.append(unfound_unambig_diffs_file)
@@ -54,19 +59,63 @@ def main():
     print(missing_diff_files)
 
 
-def coverage_check(cov_vcf, diff_csv):
-    for idx, diff_line in diff_csv.iterrows():
-        print("check_position##############################################")
-        diff_position = diff_line['positions']
-        print(diff_position)
-        print(diff_line)
+def get_real_position(vcf, gaps_df, bai_df):
 
-        vcf_pos = cov_vcf.loc[cov_vcf['POS'] == diff_position]
-        print(vcf_pos['POS'])
-        print(vcf_pos['REF'])
-        print(vcf_pos['ALT'])
+    vcf_columns = vcf.columns
+    bai_columns = bai_df.columns
+    print(bai_columns)
+
+    checked_base_count = 0
+    for idx, row in bai_df.iterrows():
+        bai_pos = row['positions']
+        # print(bai_pos)
+
+        earlier_gap_rows = gaps_df.loc[gaps_df['pos'] <= bai_pos]
+        # print(earlier_gap_rows)
+        num_gaps = len(earlier_gap_rows)
+
+        updated_vcf_position = (bai_pos - num_gaps) + 1
+        # correct_vcf_row = vcf.loc[vcf['POS'] == updated_vcf_position]
+        correct_vcf_row = vcf.index[vcf['POS'] == updated_vcf_position].tolist()
+        vcf_base = vcf.at[correct_vcf_row[0], 'REF']
+        error_base = row[bai_columns[3]]
+        assert vcf_base.upper() == error_base.upper()
+        info_column = vcf.at[correct_vcf_row[0], 'INFO']
+
+        split_info = info_column.split(';', 1)
+        cov = split_info[0]
+        print(cov)
+
+        # vcf_base = correct_vcf_row['REF']
+        # error_base = row[bai_columns[3]]
+        # print(vcf_base)
+        # print(error_base)
+        # print(correct_vcf_row['INFO'])
+        # assert vcf_base.upper() == error_base.upper()
 
 
+
+        # print('position of base of interest: ', bai_pos)
+        # print('position in vcf file to find that base: ', updated_vcf_position)
+        # print(correct_vcf_row)
+        # print(correct_vcf_row['REF'])
+        # print("#################################")
+        # checked_base_count+=1
+        # print(checked_base_count)
+
+
+
+def smart_read_vcf(unread_vcf_obj):
+    number_double_hash = 0
+    with open(unread_vcf_obj) as vcf_file:
+        head = list(islice(vcf_file, 50))
+    for line in head:
+        if "##" in line:
+            number_double_hash+=1
+
+    read_vcf = pd.read_table(unread_vcf_obj, sep='\s+', skiprows=number_double_hash, escapechar='#')
+
+    return read_vcf
 
 
 if __name__ == '__main__':
