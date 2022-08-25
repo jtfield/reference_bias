@@ -30,6 +30,10 @@ def main():
     diffs_list = os.listdir(args.diffs_dir)
     missing_diff_files = []
 
+    output_dict = {}
+    for i in range(0,500):
+        output_dict[i] = 0
+
     for file_name in vcf_list:
         split_file_name = file_name.split("_query_")
         ref = split_file_name[0].replace('ref_','')
@@ -45,11 +49,11 @@ def main():
             # read_vcf = pd.read_table(args.vcf_dir + '/' + file_name, sep='\s+', skiprows=21, escapechar='#')
             read_vcf = smart_read_vcf(args.vcf_dir + '/' + file_name)
 
-            print(ref_gaps.columns)
-            print(read_diffs.columns)
-            print(read_vcf.columns)
+            # print(ref_gaps.columns)
+            # print(read_diffs.columns)
+            # print(read_vcf.columns)
 
-            get_real_position(read_vcf, ref_gaps, read_diffs)
+            get_real_position(read_vcf, ref_gaps, read_diffs, output_dict)
 
             # exit()
 
@@ -57,13 +61,21 @@ def main():
             missing_diff_files.append(unfound_unambig_diffs_file)
 
     print(missing_diff_files)
+    # print(output_dict)
+
+    output_df = pd.DataFrame(list(output_dict.items()), columns = ['coverage', 'count'])
+    output_df.to_csv('unambigous_diffs_coverage_counts.csv')
 
 
-def get_real_position(vcf, gaps_df, bai_df):
+def get_real_position(vcf, gaps_df, bai_df, output_dict):
+
+    # output_dict = {}
+    # for i in range(0,200):
+    #     output_dict[i] = 0
 
     vcf_columns = vcf.columns
     bai_columns = bai_df.columns
-    print(bai_columns)
+    # print(bai_columns)
 
     checked_base_count = 0
     for idx, row in bai_df.iterrows():
@@ -83,25 +95,13 @@ def get_real_position(vcf, gaps_df, bai_df):
         info_column = vcf.at[correct_vcf_row[0], 'INFO']
 
         split_info = info_column.split(';', 1)
-        cov = split_info[0]
-        print(cov)
-
-        # vcf_base = correct_vcf_row['REF']
-        # error_base = row[bai_columns[3]]
-        # print(vcf_base)
-        # print(error_base)
-        # print(correct_vcf_row['INFO'])
-        # assert vcf_base.upper() == error_base.upper()
+        dp_cov = split_info[0]
+        split_cov = dp_cov.split('=')
+        coverage_num = split_cov[1]
+        # print(coverage_num)
+        output_dict[int(coverage_num)] +=1
 
 
-
-        # print('position of base of interest: ', bai_pos)
-        # print('position in vcf file to find that base: ', updated_vcf_position)
-        # print(correct_vcf_row)
-        # print(correct_vcf_row['REF'])
-        # print("#################################")
-        # checked_base_count+=1
-        # print(checked_base_count)
 
 
 
