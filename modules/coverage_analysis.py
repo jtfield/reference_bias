@@ -89,17 +89,24 @@ def get_real_position(vcf, gaps_df, bai_df, output_dict):
         updated_vcf_position = (bai_pos - num_gaps) + 1
         # correct_vcf_row = vcf.loc[vcf['POS'] == updated_vcf_position]
         correct_vcf_row = vcf.index[vcf['POS'] == updated_vcf_position].tolist()
-        vcf_base = vcf.at[correct_vcf_row[0], 'REF']
-        error_base = row[bai_columns[3]]
-        assert vcf_base.upper() == error_base.upper()
-        info_column = vcf.at[correct_vcf_row[0], 'INFO']
 
-        split_info = info_column.split(';', 1)
-        dp_cov = split_info[0]
-        split_cov = dp_cov.split('=')
-        coverage_num = split_cov[1]
-        # print(coverage_num)
-        output_dict[int(coverage_num)] +=1
+        try:
+            vcf_base = vcf.at[correct_vcf_row[0], 'REF']
+            error_base = row[bai_columns[3]]
+            assert vcf_base.upper() == error_base.upper()
+            info_column = vcf.at[correct_vcf_row[0], 'INFO']
+
+            split_info = info_column.split(';', 1)
+            dp_cov = split_info[0]
+            split_cov = dp_cov.split('=')
+            coverage_num = split_cov[1]
+            # print(coverage_num)
+            output_dict[int(coverage_num)] +=1
+
+        except IndexError:
+            print("error at vcf indexing")
+            print(correct_vcf_row)
+            print(correct_vcf_row[0])
 
 
 
