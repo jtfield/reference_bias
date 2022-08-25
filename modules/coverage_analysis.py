@@ -30,9 +30,9 @@ def main():
     diffs_list = os.listdir(args.diffs_dir)
     missing_diff_files = []
 
-    output_dict = {}
-    for i in range(0,500):
-        output_dict[i] = 0
+    # output_dict = {}
+    # for i in range(0,500):
+    #     output_dict[i] = 0
 
     for file_name in vcf_list:
         split_file_name = file_name.split("_query_")
@@ -53,7 +53,8 @@ def main():
             # print(read_diffs.columns)
             # print(read_vcf.columns)
 
-            get_real_position(read_vcf, ref_gaps, read_diffs, output_dict)
+            #get_real_position(read_vcf, ref_gaps, read_diffs, output_dict, unfound_unambig_diffs_file)
+            get_real_position(read_vcf, ref_gaps, read_diffs, unfound_unambig_diffs_file)
 
             # exit()
 
@@ -63,15 +64,16 @@ def main():
     print(missing_diff_files)
     # print(output_dict)
 
-    output_df = pd.DataFrame(list(output_dict.items()), columns = ['coverage', 'count'])
-    output_df.to_csv('unambigous_diffs_coverage_counts.csv')
+    # output_df = pd.DataFrame(list(output_dict.items()), columns = ['coverage', 'count'])
+    # output_df.to_csv('unambigous_diffs_coverage_counts.csv')
 
 
-def get_real_position(vcf, gaps_df, bai_df, output_dict):
+#def get_real_position(vcf, gaps_df, bai_df, output_dict, file_name):
+def get_real_position(vcf, gaps_df, bai_df, file_name):
 
-    # output_dict = {}
-    # for i in range(0,200):
-    #     output_dict[i] = 0
+    output_dict = {}
+    for i in range(0,500):
+        output_dict[i] = 0
 
     vcf_columns = vcf.columns
     bai_columns = bai_df.columns
@@ -108,7 +110,8 @@ def get_real_position(vcf, gaps_df, bai_df, output_dict):
             print(correct_vcf_row)
             print(correct_vcf_row[0])
 
-
+    output_df = pd.DataFrame(list(output_dict.items()), columns = ['coverage', 'count'])
+    output_df.to_csv('coverage_results_' + file_name)
 
 
 
