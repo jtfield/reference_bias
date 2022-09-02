@@ -37,7 +37,10 @@ def main():
 
         get_real_position(read_vcf, output_dict)
 
-        print(output_dict)
+        # print(output_dict)
+
+    output_df = pd.DataFrame(list(output_dict.items()), columns = ['coverage', 'count'])
+    output_df.to_csv(args.output_csv)
 
 
 def get_real_position(vcf, cov_dict):
