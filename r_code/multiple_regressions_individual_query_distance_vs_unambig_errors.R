@@ -1,7 +1,7 @@
 #library(stargazer)
 
 # Analaysis of sequence comparison based on reference selection
-setwd("/home/vortacs/ref_bias_work/fixed_alignments/hyp_a_distance_to_errors/error_diffs/ref_summary_files/ref_summaries_with_dists")
+setwd("/home/vortacs/ref_bias_work/fixed_alignments/hyp_a_distance_to_errors/error_diffs/query_summary_files/query_summaries_with_dists")
 
 #compare_data <- read.csv("updated_summary_diffs.csv", header = TRUE, sep=",")
 #colnames(compare_data)
@@ -15,7 +15,7 @@ setwd("/home/vortacs/ref_bias_work/fixed_alignments/hyp_a_distance_to_errors/err
 
 #summary(model)
 
-data_files = lapply(Sys.glob("dists_added_diff_summary_75_ref_*.csv"), read.csv)
+data_files = lapply(Sys.glob("dists_added_diff_summary_75_query_*.csv"), read.csv)
 
 lmp <- function (modelobject) {
   if (class(modelobject) != "lm") stop("Not an object of class 'lm' ")
@@ -36,16 +36,16 @@ reg_results[1,4] = "adj_r-squared"
 #sink("single_query_taxon_ambiguous_errors_regression_summary.txt")
 
 for (i in 1:length(data_files)) {
-
+  
   current_table = data_files[[i]]
   current_row = i + 1
   
   #scatter.smooth(current_table$distance, current_table$all_diffs, xlab="Phylogenetic distance", ylab="Errors", main='Nucleotides errors vs. Distance to reference', sub=current_table$ref_name)
   
   model <- lm(current_table$unambiguous_diffs_to_true~current_table$distance)
-
+  
   #print(current_table$taxon_name[1])
-  tax_name = format(current_table$ref_name[1])
+  tax_name = format(current_table$taxon_name[1])
   print(tax_name)
   #print(summary(model))
   
@@ -62,7 +62,7 @@ for (i in 1:length(data_files)) {
   
   
   print("\n\n\n")
-
+  
   
   
   
@@ -77,7 +77,7 @@ print(reg_results)
 
 stat_results = data.frame(reg_results)
 
-write.csv(stat_results, "single_taxon_ref_unambiguous_errors_distance_regression_results.csv", row.names = FALSE)
+write.csv(stat_results, "single_taxon_query_unambiguous_errors_distance_regression_results.csv", row.names = FALSE)
 
 #sink()
 
@@ -85,5 +85,3 @@ write.csv(stat_results, "single_taxon_ref_unambiguous_errors_distance_regression
 #lapply(reg_results, write, "single_taxon_query_regression_results.txt", append=TRUE, ncolumns=500)
 
 #dev.off()
-
-
