@@ -14,8 +14,8 @@ import pandas as pd
 from itertools import islice
 
 def parse_args():
-    parser = argparse.ArgumentParser(prog='coverage_analysis.py', \
-        description='Run after combine_cov_vcfs.py to replace the sra numbers in the file names with the sample IDs.')
+    parser = argparse.ArgumentParser(prog='vcf_coverage_counter.py', \
+        description='Counts the coverage of every unambiguous base in a direcotry of vcf files.')
     parser.add_argument('--vcf_dir', help='Directory of multiple coverage vcf files.')
     parser.add_argument('--output_csv', default='unambigous_coverage_levels.csv', help='table of coverage of each unambiguous error analyzed.')
     # parser.add_argument('--output_coverage_dir', default='coverage_analysis_results', help='directory of updated unambiguous differences files that now include coverage data for each ref_base.')

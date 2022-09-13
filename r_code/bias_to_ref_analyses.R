@@ -1,5 +1,5 @@
 # Analaysis of sequence comparison based on reference selection
-setwd("/home/vortacs/ref_bias_work/fixed_alignments/hyp_a_distance_to_errors/error_diffs/summary_files")
+setwd("/home/vortacs/ref_bias_work/fixed_alignments/hyp_a_distance_to_errors/error_diffs/ref_summary_files")
 
 compare_data <- read.csv("distances_added_combined_summary.csv", header = TRUE, sep=",")
 print(colnames(compare_data))

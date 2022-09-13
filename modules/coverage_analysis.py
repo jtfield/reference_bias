@@ -15,7 +15,7 @@ from itertools import islice
 
 def parse_args():
     parser = argparse.ArgumentParser(prog='coverage_analysis.py', \
-        description='Run after combine_cov_vcfs.py to replace the sra numbers in the file names with the sample IDs.')
+        description='Matches the taxa of the various files (gaps, diffs and vcf) to identify the coverage of each unambiguous difference.')
     parser.add_argument('--vcf_dir', help='Directory of multiple coverage vcf files.')
     parser.add_argument('--diffs_dir', help='directory of differences files.')
     parser.add_argument('--gap_files_dir', help='directory of files tracking gap positions in each ref files.')
